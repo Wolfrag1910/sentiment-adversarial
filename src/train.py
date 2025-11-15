@@ -4,6 +4,7 @@ from torch.optim import Adam
 from src.data import build_imdb_splits, make_loaders
 from src.models.cnn_text import TextCNN
 from src.utils.metrics import Accumulator
+import pickle
 
 def load_cfg(p): return yaml.safe_load(open(p))
 def set_seed(s):
@@ -22,6 +23,10 @@ def main(args):
     cfg = load_cfg(args.config)
     set_seed(cfg["project"]["seed"])
     (trX,trY),(vaX,vaY),(teX,teY), V, meta = build_imdb_splits(cfg)
+    os.makedirs(cfg["log"]["dir"], exist_ok=True)
+    vocab_path = os.path.join(cfg["log"]["dir"], "vocab.pkl")
+    with open(vocab_path, "wb") as f:
+        pickle.dump(V, f)
     tr_loader, va_loader = make_loaders((trX,trY), (vaX,vaY), cfg)
 
     device = get_device(cfg["project"]["device"])

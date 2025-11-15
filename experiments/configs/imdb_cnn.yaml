@@ -9,8 +9,8 @@ data:
   lowercase: true
   remove_html_breaks: true
   normalize_unicode: true
-  max_len: 256
-  min_freq: 3
+  max_len: 400      # was 256
+  min_freq: 1       # was 3
   max_vocab: 20000
   pad_token: "<pad>"
   unk_token: "<unk>"
@@ -19,9 +19,9 @@ data:
 
 model:
   name: "cnn_text"
-  embedding_dim: 100
+  embedding_dim: 200      # was 100
   filter_sizes: [3, 4, 5]
-  num_filters: 100
+  num_filters: 150        # was 100
   dropout: 0.5
   num_classes: 2
 
@@ -30,7 +30,7 @@ train:
   optimizer: "adam"
   lr: 0.001
   weight_decay: 0.0
-  early_stop_patience: 3
+  early_stop_patience: 5
   grad_clip: 5.0
   mixed_precision: false
 
