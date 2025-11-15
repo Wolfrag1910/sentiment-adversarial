@@ -1,0 +1,40 @@
+project:
+  seed: 1337
+  device: "cpu"        # "cuda", "cpu", or "auto"
+
+data:
+  root: "data/raw/aclImdb"
+  use_official_test: true
+  val_ratio: 0.2
+  lowercase: true
+  remove_html_breaks: true
+  normalize_unicode: true
+  max_len: 256
+  min_freq: 3
+  max_vocab: 20000
+  pad_token: "<pad>"
+  unk_token: "<unk>"
+  num_workers: 4
+  batch_size: 64
+
+model:
+  name: "cnn_text"
+  embedding_dim: 100
+  filter_sizes: [3, 4, 5]
+  num_filters: 100
+  dropout: 0.5
+  num_classes: 2
+
+train:
+  epochs: 20
+  optimizer: "adam"
+  lr: 0.001
+  weight_decay: 0.0
+  early_stop_patience: 3
+  grad_clip: 5.0
+  mixed_precision: false
+
+log:
+  dir: "experiments/logs"
+  csv_name: "imdb_cnn_clean.csv"
+  ckpt_path: "experiments/logs/imdb_cnn.pt"
