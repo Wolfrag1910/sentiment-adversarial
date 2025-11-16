@@ -87,7 +87,7 @@ python -m src.eval --config experiments/configs/imdb_cnn.yaml --ckpt experiments
 Test the baseline model against adversarial attacks:
 
 ```bash
-python src.eval_attacks --config experiments/configs/imdb_cnn.yaml --ckpt experiments/logs/imdb_cnn.pt --output_csv experiments/logs/results_attacks.csv
+python -m src.eval_attacks --config experiments/configs/imdb_cnn.yaml --ckpt experiments/logs/imdb_cnn.pt --output_csv experiments/logs/results_attacks.csv
 ```
 
 This evaluates:
@@ -111,7 +111,7 @@ and writes results_attacks.csv with:
 Test the model with input sanitization enabled:
 
 ```bash
-python src.eval_attacks --config experiments/configs/imdb_cnn.yaml --ckpt experiments/logs/imdb_cnn.pt --sanitize --output_csv experiments/logs/results_attacks_sanitized.csv
+python -m src.eval_attacks --config experiments/configs/imdb_cnn.yaml --ckpt experiments/logs/imdb_cnn.pt --sanitize --output_csv experiments/logs/results_attacks_sanitized.csv
 ```
 This applies a pre-processing pipeline before the model sees the input:
 1. Unicode NFKC normalization and lowercasing.
@@ -127,7 +127,7 @@ This defense is very effective against character-level attacks, and slightly imp
 Fine-tune the model using adversarial examples:
 
 ```bash
-python src.train_adv --config experiments/configs/imdb_cnn.yaml
+python -m src.train_adv --config experiments/configs/imdb_cnn.yaml
 ```
 
 This will:
@@ -151,7 +151,7 @@ python -m src.eval --config experiments/configs/imdb_cnn.yaml --ckpt experiments
 
 #### Attacks without sanitization
 ```bash
-python src.eval_attacks --config experiments/configs/imdb_cnn.yaml --ckpt experiments/logs/imdb_cnn_adv.pt --output_csv experiments/logs/results_attacks_adv.csv
+python -m src.eval_attacks --config experiments/configs/imdb_cnn.yaml --ckpt experiments/logs/imdb_cnn_adv.pt --output_csv experiments/logs/results_attacks_adv.csv
 ```
 
 #### Attacks with sanitization
