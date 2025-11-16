@@ -52,3 +52,16 @@ attacks:
   char:
     max_edits_list: [1, 2, 3]     # budgets m for character edits # was 1, 2, 3
     max_char_frac: 0.15           # ≤15% of characters may be modified # was 0.15
+
+adv_train:
+  from_ckpt: "experiments/logs/imdb_cnn.pt"        # start from clean baseline
+  out_ckpt: "experiments/logs/imdb_cnn_adv.pt"     # save fine-tuned model here
+  log_csv:  "experiments/logs/imdb_cnn_adv.csv"    # training log for adv training
+
+  epochs: 3              # 3–5 is usually enough as fine-tuning
+  lr: 0.0005             # smaller LR for fine-tuning than baseline (0.001)
+  weight_decay: 0.0
+
+  adv_ratio: 0.5         # fraction of each batch to turn into adversarial
+  attacks: ["keyword", "char"]   # which attacks to sample from
+  max_changes: [1, 2]    # budgets for generating adversarial samples during training

@@ -23,30 +23,34 @@ def compute_word_importance(
         sorted_importance: list of (position, score) sorted desc by score
         base_prob: p(y=true_label | x)
     """
+    was_training = model.training          # <--- remember state
     model.eval()
-    with torch.no_grad():
-        x = input_ids.unsqueeze(0).to(device)
-        logits = model(x)
-        probs = F.softmax(logits, dim=1)[0]
-        base_prob = probs[true_label].item()
-
-    # positions of non-pad tokens
-    positions = [i for i, tok in enumerate(input_ids.tolist()) if tok != pad_idx]
-
-    scores: List[Tuple[int, float]] = []
-    for pos in positions:
-        x_pert = input_ids.clone()
-        x_pert[pos] = unk_idx
+    try:
         with torch.no_grad():
-            logits_pert = model(x_pert.unsqueeze(0).to(device))
-            probs_pert = F.softmax(logits_pert, dim=1)[0]
-            prob_true = probs_pert[true_label].item()
-        drop = base_prob - prob_true
-        scores.append((pos, drop))
+            x = input_ids.unsqueeze(0).to(device)
+            logits = model(x)
+            probs = F.softmax(logits, dim=1)[0]
+            base_prob = probs[true_label].item()
 
-    scores.sort(key=lambda t: t[1], reverse=True)
-    return scores, base_prob
+        # positions of non-pad tokens
+        positions = [i for i, tok in enumerate(input_ids.tolist()) if tok != pad_idx]
+        scores: List[Tuple[int, float]] = []
 
+        for pos in positions:
+            x_pert = input_ids.clone()
+            x_pert[pos] = unk_idx
+            with torch.no_grad():
+                logits_pert = model(x_pert.unsqueeze(0).to(device))
+                probs_pert = F.softmax(logits_pert, dim=1)[0]
+                prob_true = probs_pert[true_label].item()
+            drop = base_prob - prob_true
+            scores.append((pos, drop))
+
+        scores.sort(key=lambda t: t[1], reverse=True)
+        return scores, base_prob
+    finally:
+        if was_training:
+            model.train()                  # <--- restore state
 
 class KeywordSubstitutionAttack:
     """
@@ -76,10 +80,14 @@ class KeywordSubstitutionAttack:
         self.max_synonyms = max_synonyms
 
         random.seed(random_seed)
+        self.refresh_embeddings()
 
-        # Precompute L2-normalised embedding matrix for cosine similarity
-        with torch.no_grad():
-            emb = model.emb.weight.detach()  # (V, D)
+
+
+    def refresh_embeddings(self):
+        """Recompute normalised embedding matrix (useful after model updates)."""
+        with torch.no_grad():                         # Precompute L2-normalised embedding matrix for cosine similarity
+            emb = self.model.emb.weight.detach()  # (V, D)
             norm = emb.norm(dim=1, keepdim=True) + 1e-8
             self.emb_norm = emb / norm
 
