@@ -41,17 +41,17 @@ log:
 
 attacks:
   # evaluate on this many test examples (None = full test set)
-  max_eval_examples: 500    # you can raise/lower this later # was 500
+  max_eval_examples: 500    # you can raise/lower this later
 
   keyword:
-    max_changes_list: [1, 2, 3]   # budgets k for word substitutions # was 1, 2 ,3
-    max_fraction_changed: 0.2     # ≤20% of real tokens can be changed # was 0.2
-    top_k_words: 8                # only attack top-8 important words # was 8
-    max_synonyms: 20              # nearest neighbours to consider per word # was 20
+    max_changes_list: [1, 2, 3]   # budgets k for word substitutions
+    max_fraction_changed: 0.2     # ≤20% of real tokens can be changed
+    top_k_words: 8                # only attack top-8 important words
+    max_synonyms: 20              # nearest neighbours to consider per word
 
   char:
-    max_edits_list: [1, 2, 3]     # budgets m for character edits # was 1, 2, 3
-    max_char_frac: 0.15           # ≤15% of characters may be modified # was 0.15
+    max_edits_list: [1, 2, 3]     # budgets m for character edits
+    max_char_frac: 0.15           # ≤15% of characters may be modified
 
 adv_train:
   from_ckpt: "experiments/logs/imdb_cnn.pt"        # start from clean baseline

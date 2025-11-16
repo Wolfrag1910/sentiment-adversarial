@@ -1,3 +1,13 @@
+"""
+Data inspection and visualization script.
+
+Analyzes the IMDB dataset to understand its characteristics:
+- Label distribution
+- Review length statistics
+- Example reviews
+- Length histograms for presentations
+"""
+
 import argparse
 import os
 import random
@@ -12,24 +22,33 @@ from src.vocab import tokenize
 
 def describe_split(name, examples, cfg, save_hist=True, show_examples=True):
     """
-    examples: list[(raw_text, label)]
+    Analyze and describe a dataset split.
+    
+    Args:
+        name: Name of the split (e.g., 'train', 'val', 'test')
+        examples: List of (text, label) tuples
+        cfg: Configuration dictionary
+        save_hist: Whether to save length histogram as image
+        show_examples: Whether to print example reviews
     """
+    # Get preprocessing settings from config
     lower = cfg["data"]["lowercase"]
     rm_br = cfg["data"]["remove_html_breaks"]
     norm = cfg["data"]["normalize_unicode"]
 
-    # Clean + tokenize
+    # Clean and tokenize all examples
     clean_texts = [clean_text(t, lower, rm_br, norm) for t, _ in examples]
     labels = [y for _, y in examples]
     tokens = [tokenize(t) for t in clean_texts]
     lengths = np.array([len(toks) for toks in tokens], dtype=np.int32)
 
-    # Label distribution
+    # Compute label distribution
     label_counts = Counter(labels)
     n_total = len(labels)
     n_pos = label_counts.get(1, 0)
     n_neg = label_counts.get(0, 0)
 
+    # Print summary statistics
     print(f"\n===== {name.upper()} SPLIT =====")
     print(f"Total examples: {n_total}")
     print(
@@ -37,7 +56,7 @@ def describe_split(name, examples, cfg, save_hist=True, show_examples=True):
         f"Negative: {n_neg} ({n_neg / n_total:.1%})"
     )
 
-    # Length statistics
+    # Print length statistics
     print("\nReview length (in tokens):")
     print(f"  min    : {lengths.min()}")
     print(f"  max    : {lengths.max()}")
@@ -46,7 +65,7 @@ def describe_split(name, examples, cfg, save_hist=True, show_examples=True):
     print(f"  95th % : {np.percentile(lengths, 95):.1f}")
     print(f"  99th % : {np.percentile(lengths, 99):.1f}")
 
-    # Optional histogram for slides
+    # Save histogram for presentations/reports
     if save_hist:
         try:
             import matplotlib.pyplot as plt
@@ -65,9 +84,18 @@ def describe_split(name, examples, cfg, save_hist=True, show_examples=True):
             plt.close()
             print(f"  Saved length histogram to {out_path}")
 
-    # A few example reviews for the presentation
+    # Show example reviews for understanding the data
     if show_examples:
         def print_examples(label, label_name, k=2, max_chars=400):
+            """
+            Print a few example reviews for a given label.
+            
+            Args:
+                label: Label value (0 or 1)
+                label_name: Human-readable label name
+                k: Number of examples to show
+                max_chars: Maximum characters to display per review
+            """
             idxs = [i for i, y in enumerate(labels) if y == label][:k]
             print(f"\n{label_name} examples (showing {len(idxs)}):")
             for j, i in enumerate(idxs, start=1):
@@ -83,14 +111,16 @@ def describe_split(name, examples, cfg, save_hist=True, show_examples=True):
 
 
 def main():
+    """Main data inspection function."""
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "--config",
         default="experiments/configs/imdb_cnn.yaml",
-        help="Path to YAML config (same as used for training).",
+        help="Path to YAML config (same as used for training)",
     )
     args = ap.parse_args()
 
+    # Load configuration
     with open(args.config, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
@@ -98,19 +128,20 @@ def main():
     val_ratio = cfg["data"]["val_ratio"]
     seed = cfg["project"].get("seed", 1337)
 
-    # Use same seed & splitting logic as training, so stats match your model.
+    # Use same seed and splitting logic as training for consistency
     random.seed(seed)
     train_all = read_split(root, "train")
     test_all = read_split(root, "test")
 
+    # Split training data into train and validation
     n_train = int((1.0 - val_ratio) * len(train_all))
     train_split = train_all[:n_train]
     val_split = train_all[n_train:]
 
-    # Describe each split
+    # Analyze each split
     describe_split("train", train_split, cfg, save_hist=True, show_examples=True)
-    describe_split("val",   val_split,   cfg, save_hist=True, show_examples=False)
-    describe_split("test",  test_all,    cfg, save_hist=True, show_examples=False)
+    describe_split("val", val_split, cfg, save_hist=True, show_examples=False)
+    describe_split("test", test_all, cfg, save_hist=True, show_examples=False)
 
 
 if __name__ == "__main__":
